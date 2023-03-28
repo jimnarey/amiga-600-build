@@ -49,7 +49,7 @@ Whether using an HDF file or working directly with a real disk, it’s best to k
 
 An HDF file well under 4GB can be safely flashed to any 4GB card.
 
-A real SD/CF card with partitions totalling well under 4GB can be backed up using dd and the resulting image flashed to any 4GB card. This applies whether the real drive was provisioned directly or was itself flashed from an HDF file.
+A real SD/CF card with partitions totalling well under 4GB can be backed up using `dd` and the resulting image flashed to any 4GB card. This applies whether the real drive was provisioned directly or was itself flashed from an HDF file.
 
 ### Preparing a read SD/CF Card
 
@@ -83,20 +83,20 @@ Under ‘CD & Hard drives’ click ‘Add Hard Drive’ and select the empty SD/
 
 #### Use a hard disk image
 
-Under ‘CD & Hard drives’ click ‘Add Hardfile’ and create a new HDF file by entering a value for the size and clicking ‘Create’.
+Under **CD & Hard drives** click **Add Hardfile** and create a new HDF file by entering a value for the size and clicking **Create**.
 
 Creating a 3072MB/3GB HDF file provides more than enough space and keeps things simple when backing up/restoring.
 
-Ensure the ‘Full drive/RDB mode’ checkbox is selected.
+Ensure the **Full drive/RDB mode** checkbox is selected.
 
 
 ### Partition the Disk
 
 If re-doing this process, or repeating it with a new HDF file/SD/CF, it’s best to start with a fresh copy of the Install floppy image. It saves information about the disks it sees and this can cause confusion when working with what is already a less than user-friendly interface.
 
-Click ‘Start’ in WinUAE.
+Click **Start** in WinUAE.
 
-In Workbench double click on the Install disk, the HD Tools folder and click once on HD Toolbox. From the ‘Icons’ menu select ‘Information’ and click ‘New’ under ‘Tool Types’.
+In Workbench double click on the Install disk, the HD Tools folder and click once on HD Toolbox. From the **Icons** menu select **Information** and click **New** under **Tool Types**.
 
 Enter:
 
@@ -106,17 +106,17 @@ Note that if somehow you end up using this Install disk image in a real Amiga, t
 
 Run HDToolbox.
 
-Select the SCSI disk and click ‘Change Drive Type’.
+Select the SCSI disk and click **Change Drive Type**.
 
-In the ‘Set Drive Type’ window select ‘SCSI’ as ‘Drive Type’ and click on ‘Define new drive type’.
+In the **Set Drive Type** window select **SCSI** as **Drive Type** and click on **Define new drive type**.
 
-In the box which appears, click on ‘Read Configuration’. Once this is complete, click on OK.
+In the box which appears, click on **Read Configuration**. Once this is complete, click on OK.
 
-Select the newly defined disk in the ‘Set Drive Type’ window when it reappears and click on ‘OK’.
+Select the newly defined disk in the **Set Drive Type** window when it reappears and click on **OK**.
 
 Back in the main HDToolbox window, with the SD/CF drive selected, click on ‘Save Changes to Drive’.
 
-With the drive selected, click on ‘Partition Drive’
+With the drive selected, click on **Partition Drive**.
 
 Choose the desired partition layout:
 
@@ -128,21 +128,21 @@ Whatever the chosen configuration, make the first partition bootable and the oth
 
 Once the partitions have been defined, click OK.
 
-Select ‘Save Changes to Drive’ and click ‘Exit’. Reboot the system if asked to do so. If the newly partitioned DH0 and DH1 do not appear in the main Workbench window then reboot the emulator.
+Select **Save Changes to Drive** and click **Exit**. Reboot the system if asked to do so. If the newly partitioned DH0 and DH1 do not appear in the main Workbench window then reboot the emulator.
 
-If using an HDF file and the partitions still do not appear following a reboot, ensure that the ‘Full drive/RDB mode’ checkbox is selected in the HDF file’s properties dialog for the HDF file.
+If using an HDF file and the partitions still do not appear following a reboot, ensure that the **Full drive/RDB mode** checkbox is selected in the HDF file’s properties dialog for the HDF file.
 
 
 ### Format the Partitions
 
-Format DH0 by clicking on it and selecting ‘Format’ from the ‘Icons’ menu. Give it a name (e.g. ‘System’, it will be the boot partition) and select ‘Quick Format’. Carry out the same process for the other partitions, giving each a different name.
+Format DH0 by clicking on it and selecting **Format** from the ‘Icons’ menu. Give it a name (e.g. ‘System’, it will be the boot partition) and select **Quick Format**. Carry out the same process for the other partitions, giving each a different name.
 
 
 ### Install Workbench
 
-To install Workbench to the newly formatted boot partition double-click the Install2.1 disk, double-click the Install2.1 directory and double-click ‘English’.
+To install Workbench to the newly formatted boot partition double-click the **Install2.1** disk icon, double-click the **Install2.1** drawer icon and double-click on the icon for your chosen language.
 
-Select ‘Intermediate’ and click on ‘Proceed with Install’
+Select **Intermediate** and click on **Proceed with Install**
 
 Click through the following dialog boxes until the installer states which partition it intends to install Workbench to. If this is not the DH0/System partition then change it.
 
@@ -159,7 +159,7 @@ If you’ve installed Workbench on an HDF file this needs to be flashed to an SD
 
 HDFs can be flashed with dd under Linux. HDFs are raw images and there are various tools under Windows which can flash these.
 
-To flash the image under Linux run the following command where ‘workbench.hdf’ is the name of the HDF file and ‘/dev/sdf’ is the SD/CF card:
+To flash the image under Linux run the following command where ‘workbench.hdf’ is the name of the HDF file and `/dev/sdf` is the SD/CF card:
 
 `dd if=workbench.img of=/dev/sdf status=progress bs=4M`
 
@@ -172,12 +172,10 @@ When a backup is taken of a real SD/CF card it’s important it can be reflashed
 Assuming a 4GB SD/CF card with partitions totalling approx 3GB, this can be achieved with the following calculation:
 
 * 4GB = 4294967296 bytes
-* 4294967296 bytes / 512 (dd default block size) = 8388608
-* To backup 3.5GB of raw data, we need 7/8 or 0.875 *  8388608 = 7340032
+* 4294967296 bytes / 512 = 8388608 (512 is the `dd` default block size)
+* 7/8 or 0.875 * 8388608 = 7340032 (3.5GB worth of blocks)
 
-Assuming dd’s default block size of 512 bytes, there are 8388608 blocks in a 4GB card.
-
-Around 2GB of the card is partitioned. Telling dd to copy approx 3GB will provide a large safety margin while ensuring the resulting image is writable to any 4GB card. By noting down the exact size of the partitions (use `lsblk -b`) it’s possible to be more precise and save a bit of space.
+Around 3GB of the card is partitioned. Telling dd to copy approx 3.5GB will provide a large safety margin while ensuring the resulting image is writable to any 4GB card. By noting down the exact size of the partitions (use `lsblk -b`) it’s possible to be more precise and save a bit of space.
 
 ### Install PiStorm
 
@@ -192,7 +190,7 @@ Add the following to the root of the bootfs partition:
 
 `pistorm:$6$jfIb53JooH7fOOKQ$MagIkaxf/2Aa2GicYgtuS1gUp2mOoKiKQNIbzG2MJ3DYPYAI6/XGp48VuPy.zm5eW3BijiIZDuQrGtJL58qWB1`
 
-* A ‘wpa_supplicant.conf’ file with the following content:
+* A ‘wpa_supplicant.conf’ file with the following content (replace X's with wifi network name and password):
 
 ```
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
@@ -203,7 +201,7 @@ update_config=1
 
 network={
 
- ssid=""
+ ssid="XXXXXX"
 
  psk="XXXXXX"
 
@@ -307,3 +305,11 @@ Gotek modifications
 * Gotek USB port (could be via extender, card reader, or case card reader)
 
 SD card extender for mainboard SDcard/IDE port.
+
+
+## References
+
+https://github.com/captain-amygdala/pistorm
+https://github.com/LemaruX/PiStorm600
+
+https://tech.webit.nu/pistorm-getting-started/
