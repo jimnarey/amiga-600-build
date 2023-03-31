@@ -1,20 +1,12 @@
 # Amiga 600 Build Notes
 
-## Notes
-
-ClassicWB is available for the stock 68000 but all versions require min 2MB RAM. The native IDE drive therefore needs a basic WB installation.
-
-To use FS-UAE for provisioning real disks (flash cards) for the Amiga, the path to the hard disk(s) in the configuration can be set to block devices. Permissions might be an issue, in which case run
-
-`sudo chmod 777 /dev/sdf`
-
 ## Setting up native HD
 
 ### Introduction
 
 The purpose of this set of steps is to install a version of Workbench, which can run on an unmodified Amiga 600, on an SD/CF card which is attached - via an adapter - to the Amiga’s internal IDE connector.
 
-This allows the Amiga to be run without the accelerator installed to check that everything is working normally and as a default, basic setup. It therefore keeps things as simple as possible, without any of the multitude of addons which can make Workbench more sophisticated.
+This allows the Amiga to be run without the accelerator installed to check that everything is working normally and as a default, basic setup. It therefore keeps things as simple as possible, without any of the multitude of addons which can make Workbench more sophisticated. E.g. ClassicWB is available for the stock 68000 but all versions require min 2MB RAM, which an unmodified A600 does not. The native IDE drive therefore needs a basic WB installation.
 
 ### Requirements
 
@@ -23,7 +15,7 @@ This allows the Amiga to be run without the accelerator installed to check that 
 * Full set of Workbench 2.1 disk images (Install, Workbench, Locale, Extras, Fonts)
 * A 4GB SD/CF card
 
-> It may be possible to use FS-UAE in place of WinUAE but it lacks many of the latter’s low-level options.
+> It may be possible to use FS-UAE under Linux in place of WinUAE but it lacks many of the latter’s low-level options. To mount a real disk in FS-UAE, if that's the approach you choose to take, enter the name of the corresponding block device (e.g. '/dev/sdf') in the hard disk field. To make it usable by FS-UAE you will probably have to change the permissions with e.g. `sudo chmod 777 /dev/sdf`
 
 This process will save changes to at least the Install disk image, maybe others. Make sure you have backups before proceeding.
 
@@ -177,7 +169,9 @@ Assuming a 4GB SD/CF card with partitions totalling approx 3GB, this can be achi
 
 Around 3GB of the card is partitioned. Telling dd to copy approx 3.5GB will provide a large safety margin while ensuring the resulting image is writable to any 4GB card. By noting down the exact size of the partitions (use `lsblk -b`) it’s possible to be more precise and save a bit of space.
 
-### Install PiStorm
+### Setting up the Musashi Emulator
+
+These steps cover setting up Musashi, one of the two Motorola 68000-series emulators which can be used to run the PiStorm. Unlike the alternative, Emu68, it runs on top of a full Linux OS (Raspberry Pi OS). This has advantages and disadvantages. To avoid crashes on reset, it also needs a particular firmware to be flashed to the PiStorm.
 
 Flash a Raspberry Pi OS, 32bit, Lite image to an SD card.
 
@@ -217,6 +211,154 @@ The CIDR block may vary according to the IP range of devices on the LAN.
 On the Raspberry Pi, run:
 
 `sudo apt install git libsdl2-dev openocd libdrm-dev libegl1-mesa-dev libgles2-mesa-dev libgbm-dev libasound2-dev`
+
+To test the GPIO pins, you can run the following. Ensure nothing is attached to the pins. The output should include `Failed user gpios: None`.
+
+```
+sudo apt -y install pigpio
+wget http://abyz.me.uk/rpi/pigpio/code/gpiotest.zip
+unzip gpiotest.zip
+sudo pigpiod
+./gpiotest
+```
+
+Kill the pigpiod process so it doesn't delay shutdown.
+
+`sudo killall -9 pigpiod`
+
+Clone the main PiStorm repository.
+
+```
+git clone https://github.com/captain-amygdala/pistorm.git
+cd pistorm
+make
+```
+
+> If you need to re-compile the emulator for any reason enter the pistorm directory and run
+> `make clean`
+> `make`
+
+Clone the LemaruX PiStorm firmwares, which resolve an issue with the Mushashi emulator crashing/hanging on a soft reboot. See the [PiStorm600 repo](https://github.com/LemaruX/PiStorm600) for more information.
+
+`git clone https://github.com/LemaruX/PiStorm-Firmware`
+
+Either shutdown or turn off the Pi. 
+
+Connect the PiStorm to the Raspberry Pi, being careful to ensure it is the right way round.
+
+At this stage the PiStorm/Pi assembly can either be powered using the micro-USB port on the Pi or by installing it on the Amiga mainboard. It **must not** be powered using both simultaneously. Because subsequent steps require attachment to the Amiga, it's probably easiest to to this now. See the instructions [here](https://github.com/LemaruX/PiStorm600) for attaching the PiStorm to the Amiga mainboard.
+
+Power on the Pi. Musashi on the Amiga 600 version of the PiStorm needs a particular firmware (PiStormX) to run without crashes on reboot. Once booted up and logged in with ssh, run:
+
+```
+cd PiStorm-Firmware
+./flash_PiStormX_Basic.sh
+```
+
+Now test that that the PiStorm is properly attached to the Amiga:
+
+```
+cd ~/pistorm
+chmod +x ./build_buptest.sh
+./build_buptest.sh
+sudo ./buptest
+```
+
+You should see the following output:
+
+```
+Writing garbege datas.
+Reading back garbege datas, read8()...
+read8 errors total: 0.
+Reading back garbege datas, read16(), even addresses...
+read16 even errors total: 0.
+Reading back garbege datas, read16(), odd addresses...
+read16 odd errors total: 0.
+Reading back garbege datas, read32(), even addresses...
+read32 even errors total: 0.
+Reading back garbege datas, read32(), odd addresses...
+read32 odd errors total: 0.
+Clearing 512 KB of Chip again
+[WORD] Writing garbege datas to Chip, unaligned...
+Reading back garbege datas, read16(), odd addresses...
+read16 odd errors total: 0.
+Clearing 512 KB of Chip again
+[LONG] Writing garbege datas to Chip, unaligned...
+Reading back garbege datas, read32(), odd addresses...
+read32 odd errors total: 0.
+```
+
+>> 'unaligned' in this context refers to a feature of the 68020 whereby it can read
+>> and write values comprising multiple bytes without these being aligned to an even
+>> address. It's not referring to the alingment of the physical chip.
+
+If, instead, you receive read and write errors, turn off the Amiga's power supply, remove the PiStorm (note the instruction [here](https://github.com/LemaruX/PiStorm600) to lift it from one side first) and re-attach it, being sure to press down vertically rather than one side first. The PiStorm can be fully pressed down and flush with the mainboard and still throw errors. Re-attaching it will often fix this, even though there appears to be no difference in the quality of the fit.
+
+Test the emulator by running:
+
+```
+sudo ./emulator
+```
+
+#### Autostart the Emulator
+
+With the Raspberry Pi powered on and connected via ssh, enter a superuser command prompt:
+
+```
+sudo -s
+cd /lib/systemd/system
+nano ./pistorm.servic
+```
+
+Paste the following into the new file, save and exit (`Ctrl-X`):
+
+```
+[Unit]
+Description=Start piStorm 68k emulator
+After=local-fs.target
+
+[Service]
+ExecStart=/home/pi/start-emulator.sh
+
+[Install]
+WantedBy=local-fs.target
+```
+
+Then:
+
+```
+cd /home/pi
+nano start-emulator.sh
+```
+
+Paste in the following:
+
+```
+#!/bin/sh
+cd /home/pi/pistorm/
+sudo ./emulator
+exit 0
+```
+
+Save and exit. 
+
+Make the startup script executable and set it to start automatically:
+
+```
+chmod 755 /home/pi/start-emulator.sh
+systemctl daemon-reload
+systemctl enable pistorm.service
+systemctl restart pistorm
+```
+
+#### Backup the Pi SD card
+
+With everything working, this is a good point to backup the Musashi SD card. Assuming you used a 4GB/8GB card it can now be
+
+
+#### Addiing a custom configuration
+
+
 
 
 ### Removed
