@@ -26,7 +26,7 @@ Without special hardware and drivers for it the A600 can use only one IDE device
 
 The maximum partition size the A600 can see using the filesystem built into the Kickstart ROM (FastFileSystem) is 4GB, with a total disk size of 8GB. It’s recommended in several places to keep partitions under 2GB and [here](http://wiki.classicamiga.com/Installing_a_large_Harddrive_%284GB_or_larger%29#:~:text=The%20Amiga's%20FFS%20file%20system,total%20HD%20size%20of%208GB.) to keep the boot partition under 2GB. The boot partition must be within the first 4GB.
 
-These instructions assume use of a 4GB card. If using the HDF method, outlined below, in theory you should be able to use a larger card as long as the HDF file flashed to it is &lt;= 4GB.
+These instructions assume use of a 4GB card. If using the HDF method, outlined below, in theory you should be able to use a larger card if the HDF file flashed to it is &lt;= 4GB. Don't try to flash an 8GB image to an '8GB' card. It may be too big.
 
 
 ### Real Disk vs HDF File
@@ -106,7 +106,7 @@ In the box which appears, click on **Read Configuration**. Once this is complete
 
 Select the newly defined disk in the **Set Drive Type** window when it reappears and click on **OK**.
 
-Back in the main HDToolbox window, with the SD/CF drive selected, click on ‘Save Changes to Drive’.
+Back in the main HDToolbox window, with the SD/CF drive selected, click on **Save Changes to Drive**.
 
 With the drive selected, click on **Partition Drive**.
 
@@ -136,7 +136,7 @@ To install Workbench to the newly formatted boot partition double-click the **In
 
 Select **Intermediate** and click on **Proceed with Install**
 
-Click through the following dialog boxes until the installer states which partition it intends to install Workbench to. If this is not the DH0/System partition then change it.
+Click through the following dialog boxes until the installer states which partition it intends to install Workbench to. If this is not the DH0/System (bootable) partition then change it.
 
 Click through the remaining dialog boxes without changing anything until ‘Installation Complete!’ is displayed. Swap the Workbench 2.1 disk images in the WinUAE settings as required during the process.
 
@@ -173,7 +173,11 @@ Around 3GB of the card is partitioned. Telling dd to copy approx 3.5GB will prov
 
 These steps cover setting up Musashi, one of the two Motorola 68000-series emulators which can be used to run the PiStorm. Unlike the alternative, Emu68, it runs on top of a full Linux OS (Raspberry Pi OS). This has advantages and disadvantages. To avoid crashes on reset, it also needs a particular firmware to be flashed to the PiStorm.
 
-Flash a Raspberry Pi OS, 32bit, Lite image to an SD card.
+Download the Raspberry Pi OS Buster Lite image from [here](https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-os-legacy). The [main PiStorm GitHub page](https://github.com/captain-amygdala/pistorm) includes specific instructions for using Raspberry Pi Bullseye but doing so may fail when it comes to flashing the CLPD built into the PiStorm. The easiest solution is just to use the older, Buster version of the OS.
+
+> The problem with Bullseye is that it includes a newer version of openocd which will not flash at least some of the CLPDs which may be used in the PiStorm (it can be built with any of several). One solution is to install the older, working version of openocd in Bullseye (0.10.0) but it's easier to simply use Buster while it remains easily available.
+
+Flash the image to to the SD card. Rememeber that if using Linux/dd, you will need to extract the .xz archive and `unxz` will delete the original archive unless it's passed the `-k` option.
 
 Using a relatively small card (4GB or 8GB) will enable relatively small backups which can be flashed to larger cards where necessary.
 
@@ -235,7 +239,9 @@ make
 ```
 
 > If you need to re-compile the emulator for any reason enter the pistorm directory and run
+>
 > `make clean`
+>
 > `make`
 
 Clone the LemaruX PiStorm firmwares, which resolve an issue with the Mushashi emulator crashing/hanging on a soft reboot. See the [PiStorm600 repo](https://github.com/LemaruX/PiStorm600) for more information.
@@ -288,9 +294,9 @@ Reading back garbege datas, read32(), odd addresses...
 read32 odd errors total: 0.
 ```
 
->> 'unaligned' in this context refers to a feature of the 68020 whereby it can read
->> and write values comprising multiple bytes without these being aligned to an even
->> address. It's not referring to the alingment of the physical chip.
+> 'unaligned' in this context refers to a feature of the 68020 whereby it can read
+and write values comprising multiple bytes without these being aligned to an even
+address. It's not referring to the alingment of the physical chip.
 
 If, instead, you receive read and write errors, turn off the Amiga's power supply, remove the PiStorm (note the instruction [here](https://github.com/LemaruX/PiStorm600) to lift it from one side first) and re-attach it, being sure to press down vertically rather than one side first. The PiStorm can be fully pressed down and flush with the mainboard and still throw errors. Re-attaching it will often fix this, even though there appears to be no difference in the quality of the fit.
 
