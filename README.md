@@ -1,5 +1,68 @@
 # Amiga 600 Build Notes
 
+## Introduction
+
+This page covers the process for taking a stock Amiga 600 and building a modern hardware and software setup. 
+
+This includes:
+
+* Cleaning recapping the Amiga mainboard
+* Addition of an adapter to use an SD card as an IDE hard disk
+* Installation of Workbench 2.1 on the internal SD card
+* Replacement of the floppy drive with a GoTek floppy drive emulator
+* Modification of the GoTek FDE to use a rotary encoder and OLED screen to select floppy images
+* Installation and setup of a PiStorm accelerator
+* Creation of SD cards for the Musashi and Emu68 68000-series emulators and a third SD card for changing the PiStorm firmware
+* (Configuration of Musashi and Emu68, including adding kickstart roms and hard disk images)
+* Installation of the mainboard in a tower case
+* Exposure of the following on the case front panel: 
+    * The IDE SD card and PiStorm SD card slots on the case front panel
+    * USB ports attached to the PiStorm on the front panel
+    * The Amiga's 9-pin mouse/joystick ports on the front panel, with the joystick port made safe for Sega Megadrive/Genesis compatible controllers
+    * A separate USB port for direct connection of a USB keyboard to the Amiga mainboard (needed when using Emu68 insteal of Musashi)
+* (Ensuring the system is receiving an adequate voltage with the accelerator enabled)
+
+(Installation of RGBtoHDMI)
+(Installation of a switch between USB mouse and joysticks)
+
+Clearly not all of these steps are required to get an Amiga 600 up and running. Some are covered in more detail than others.
+
+The result is a system which can:
+
+* Be interfaced with more modern/convenient hardware
+* Run productivity and other Workbench applications at many times the speed of an Amiga 600
+* Run nearly all original Amiga games from hard disk, using WHDLoad
+* Run games with much reduced loading times and, in some cases, with much faster in-game processing (e.g. execution of the computer turn in Xcom)
+* Run newer homebrew or modded games designed for use with accelerators
+
+It **will not** be well-suited to running original Amiga games from floppy images. WHDLoad does a lot of work to ensure compatibility with accelerated systems. It will also **not** be able to run AGA-only games as none of this provides the A600 with an AGA chipset.
+
+### Parts and Tools
+
+The following parts and tools are needed to complete all of these steps
+
+* An Amiga 600. The case, keyboard and floppy drives are not needed.
+* A working PSU capable of powering the Amiga, accelator and accessories, e.g. [this one from RetroPassion](https://www.retropassion.co.uk/product/amiga-psu-a600-boost/). Do not, for the love of God, try to use a bog-standard, 30 year old PSU for this.
+* An SD card to 2.5in (44 pin) IDE adapter.
+* A 2.5in (44 pin) IDE cable.
+* A suitable tungsten carbide drill bit. E.g. if using nylon standoffs with a 3mm thread you need a 3.5mm drill bit.
+* A set of nylon hex spacer standoffs/screws (example: [Amazon](https://www.amazon.co.uk/Standoff-Assorted-Arduino-Circuit-Motherboard/dp/B097LGSKXG/ref=sr_1_1?crid=BLZCDFRR6BK&keywords=motherboard+mounting+posts+plastic&qid=1680393704&sprefix=motherboard+mounting+posts+plastic%2Caps%2C66&sr=8-1)).
+* A suitable tower case, e.g. a Micro ATX, with large enough internal dimensions to fit the A600 mainboard with clearance around the ports (at least 25cm x 35cm). This guide was compiled using [this one from Amazon](https://www.amazon.co.uk/dp/B076DFHYC1?psc=1&ref=ppx_yo2ov_dt_b_product_details). A different case will require some of the steps to be modified, but probably no by much.
+* [A PiStorm 600 accelerator board](https://github.com/LemaruX/PiStorm600)
+* A Raspberry Pi Zero W 2 or Raspberry Pi 3A+. Others may be usable, including a 3B with some desoldering, but check the documentation.
+* A USB 2.1 hub
+* Various screws and nuts, including two 18-20mm x 1.6mm screws and nuts.
+* (Several SD and micro SD cards)
+* (A USB mass storage drive, 8GB or larger)
+* An SD to micro SD extender (e.g. [this from Amazon](https://www.amazon.co.uk/Extension-LANMU-Extender-Converter-Monoprice-black/dp/B0855DBVXF/ref=sr_1_1_sspa?keywords=sd+card+extender&qid=1680394751&sprefix=SD+card+ext%2Caps%2C81&sr=8-1-spons&sp_csd=d2lkZ2V0TmFtZT1zcF9hdGY&psc=1))
+* An SD to SD extender (e.g. [this from Amazon](https://www.amazon.co.uk/Extension-LANMU-Convertor-Extender-Raspberry/dp/B07H2RQFNN/ref=sr_1_5?keywords=sd+card+extender&qid=1680394751&sprefix=SD+card+ext%2Caps%2C81&sr=8-5))
+* An Amiga 600 USB keyboard adapter (e.g. [this from eBay](https://www.ebay.co.uk/itm/232238713511)). These are increasingly hard to find but are not needed if not installing in a tower case or if only using the Musashi emulator.
+* (MegaDrive to Amiga pad adapter)
+
+## Requirements
+
+
+
 ## Setting up native HD
 
 ### Introduction
@@ -173,6 +236,8 @@ Around 3GB of the card is partitioned. Telling dd to copy approx 3.5GB will prov
 
 These steps cover setting up Musashi, one of the two Motorola 68000-series emulators which can be used to run the PiStorm. Unlike the alternative, Emu68, it runs on top of a full Linux OS (Raspberry Pi OS). This has advantages and disadvantages. To avoid crashes on reset, it also needs a particular firmware to be flashed to the PiStorm.
 
+> Even if you only plan on using Emu68, it's worth going as far as building and running `buptest.sh` which will tell you whether the PiStorm is properly attached to the Amiga 600 mainboard and the CLPD is properly flashed.
+
 Download the Raspberry Pi OS Buster Lite image from [here](https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-os-legacy). The [main PiStorm GitHub page](https://github.com/captain-amygdala/pistorm) includes specific instructions for using Raspberry Pi Bullseye but doing so may fail when it comes to flashing the CLPD built into the PiStorm. The easiest solution is just to use the older, Buster version of the OS.
 
 > The problem with Bullseye is that it includes a newer version of openocd which will not flash at least some of the CLPDs which may be used in the PiStorm (it can be built with any of several). One solution is to install the older, working version of openocd in Bullseye (0.10.0) but it's easier to simply use Buster while it remains easily available.
@@ -313,7 +378,7 @@ With the Raspberry Pi powered on and connected via ssh, enter a superuser comman
 ```
 sudo -s
 cd /lib/systemd/system
-nano ./pistorm.servic
+nano ./pistorm.service
 ```
 
 Paste the following into the new file, save and exit (`Ctrl-X`):
@@ -359,7 +424,9 @@ systemctl restart pistorm
 
 #### Backup the Pi SD card
 
-With everything working, this is a good point to backup the Musashi SD card. Assuming you used a 4GB/8GB card it can now be
+With everything working, this is a good point to backup the Musashi SD card. Assuming you used a 4GB/8GB card it can now be backed up using dd and then reflashed to a bigger card. By expanding the rootfs partition, or adding a new partition, on the bigger card there'll be plenty of space for HDF files.
+
+> This is also a good point at which to screw down the PiStorm onto the mainboard, if you haven't already. Make sure to run the emulator or `buptest.sh` after screwing down the PiStorm to ensure it wasn't moved out of place during the process. 
 
 
 #### Addiing a custom configuration
